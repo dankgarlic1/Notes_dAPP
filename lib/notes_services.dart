@@ -4,25 +4,32 @@ import 'dart:io';
 import 'package:dapp_notes/note.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/io.dart';
 
 class NotesServices extends ChangeNotifier {
   List<Note> notes = [];
-  final String RPC_URL =
-      Platform.isAndroid ? 'http://10.0.2.2:7545' : "http://172.23.32.1:7545";
-  final String WS_URL =
-      Platform.isAndroid ? 'http://10.0.2.2:7545' : "ws://172.23.32.1:7545";
-  final String PRIVATE_KEY =
-      "0x1b0f5a5e2f1381e749e23288fbabfa11635dd10b3bc3c6aafbb63c92e8a6088d";
+  final String RPC_URL = Platform.isAndroid
+      ? dotenv.env['RPC_URL1'] ?? dotenv.env['RPC_URL2'] ?? 'default_rpc_url'
+      : dotenv.env['RPC_URL2'] ?? 'default_rpc_url';
+
+  final String WS_URL = Platform.isAndroid
+      ? dotenv.env['WS_URL1'] ?? dotenv.env['WS_URL2'] ?? 'default_ws_url'
+      : dotenv.env['WS_URL2'] ?? 'default_ws_url';
+  final String PRIVATE_KEY = dotenv.env["PRIVATE_KEY"] ?? "default_private_key";
   bool isLoading = true;
 
   late Web3Client _web3client;
   late ContractAbi _abiCode;
   late EthereumAddress _contractAddress;
   NotesServices() {
+    loadEnvVariables();
     init();
+  }
+  Future<void> loadEnvVariables() async {
+    await dotenv.load();
   }
 
   Future<void> init() async {
